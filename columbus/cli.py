@@ -16,8 +16,9 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from columbus.cua_agent.agent import ComputerAgent, CuaAgentSettings
-from columbus.config.settings import Config
+from agent import ComputerAgent
+
+from columbus.config.settings import ColumbusConfig
 from columbus.dashboard import get_dashboard
 
 
@@ -33,32 +34,18 @@ console = Console()
 class ColumbusSession:
     def __init__(self):
         self.agent: Optional[ComputerAgent] = None
-        self.config: Optional[Config] = None
+        self.config: Optional[ColumbusConfig] = None
         self.session_active = False
 
     def initialize_agent(self):
         """Initialize the CUA agent with configuration"""
         try:
-            self.config = Config()
+            self.config = ColumbusConfig()
 
             # Start CUA dashboard
-            dashboard = get_dashboard()
+            get_dashboard()
 
-            # Agent settings optimized for CUA compliance
-            agent_settings = CuaAgentSettings(
-                model_fast=os.getenv("ROUTER_MODEL", "ollama_chat/llama3.2:3b"),
-                model_reasoning=os.getenv(
-                    "COMPUTER_USE_MODEL", "ollama_chat/llama3.2:8b"
-                ),
-                hitl_enabled=True,  # Always enable human-in-the-loop for safety
-                max_steps=20,
-                timeout_s=300,
-                dry_run=False,
-            )
-
-            self.agent = ComputerAgent.from_config(
-                cfg=self.config, settings=agent_settings
-            )
+            self.agent = ColumbusConfig(cfg=self.config)
             console.print("✅ Columbus agent initialized successfully", style="green")
             console.print("\n[bold cyan]🖥️  CUA Dashboard Available:[/bold cyan]")
             console.print(

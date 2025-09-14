@@ -18,6 +18,9 @@ class Config(BaseModel):
     qdrant_api_key: Optional[str] = Field(default=None, env="QDRANT_API_KEY")
     anthropic_api_key: Optional[str] = Field(default=None, env="ANTHROPIC_API_KEY")
 
+    # CUA container name
+    cua_container_name: Optional[str] = Field(default=None, env="CUA_CONTAINER_NAME")
+
     # Service URLs
     ollama_base_url: str = Field(
         default="http://localhost:11434", env="OLLAMA_BASE_URL"

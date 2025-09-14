@@ -33,11 +33,27 @@ ollama pull llama3.2:3b
 ollama pull llama3.2:8b
 ```
 
-3. **Install Qdrant** (optional - for memory):
+3. **Install CUA SDK** (optional - for full computer use capabilities):
+```bash
+# Install CUA SDK for computer use
+pip install "cua-agent[all]"
+```
+
+4. **Install Qdrant** (optional - for memory):
 ```bash
 # Docker (recommended)
 docker run -p 6333:6333 -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
 ```
+
+### CUA SDK Compatibility
+
+Columbus is designed to work with the official CUA SDK for computer use capabilities. However, it includes fallback functionality:
+
+- **With CUA SDK**: Full computer use capabilities with composed local models (omniparser + ollama)
+- **Without CUA SDK**: Columbus runs in fallback mode with basic functionality
+- **Compatibility Issues**: If CUA SDK has syntax errors (e.g., Python version compatibility), Columbus automatically falls back to safe mode
+
+The agent will display appropriate warnings and continue to function with available capabilities.
 
 ### Installation
 
@@ -309,12 +325,72 @@ The agent includes comprehensive safety features:
 
 ## Benchmarking
 
-### HUD Integration
+Columbus supports both simulated and real OSWorld-Verified benchmarks for standardized evaluation.
 
-The agent supports HUD (Human-Use Device) benchmarking for standardized evaluation:
+### Running Benchmarks
+
+```bash
+# Run both HUD OSWorld-Verified and simulated benchmarks
+uv run columbus benchmark
+
+# This will:
+# 1. Try to run HUD OSWorld-Verified tests (requires API keys)
+# 2. Fall back to simulated benchmark if HUD is unavailable
+```
+
+### OSWorld-Verified Integration
+
+The agent supports HUD OSWorld-Verified benchmarking when properly configured:
+
+**Requirements:**
+- CUA SDK: `pip install "cua-agent[all]"`
+- CUA API Key: Get from [trycua.com](https://trycua.com)
+- HUD API Key: Get from [hud.ai](https://hud.ai)
+
+**Environment Setup:**
+```bash
+export CUA_API_KEY="your-cua-api-key"
+export HUD_API_KEY="your-hud-api-key"
+```
+
+### Benchmark Results
+
+The benchmark tests the following capabilities:
+- Screenshot capture and analysis
+- Coordinate-based clicking
+- Text input and typing
+- Screen content analysis  
+- Multi-step task planning
+- Computer use intent detection
+
+**Example Results:**
+```
+📊 Columbus Benchmark Results
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃ Task             ┃ Success ┃ CUA Detection ┃ Steps ┃ Score ┃
+┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ Simulated Task 1 │   ✅    │      ✅       │   3   │  1.0  │
+│ Simulated Task 2 │   ✅    │      ✅       │   4   │  1.0  │
+│ Simulated Task 3 │   ✅    │      ✅       │   4   │  1.0  │
+│ Simulated Task 4 │   ✅    │      ✅       │   5   │  1.0  │
+│ Simulated Task 5 │   ❌    │      ❌       │   5   │  0.0  │
+└──────────────────┴─────────┴───────────────┴───────┴───────┘
+
+Success Rate: 80.0% (4/5)
+CUA Detection Accuracy: 80.0% (4/5)  
+Average Score: 0.80
+Framework: Columbus + DSPy + Mem0 + Qdrant
+```
+
+### Custom Benchmarking
 
 ```python
-from columbus.eval import BenchmarkRunner, HUDBenchmark
+from columbus.cua_agent.agent import ComputerAgent
+from columbus.config.settings import Config
+
+# Create agent
+config = Config()
+agent = ComputerAgent.from_config(cfg=config)
 
 runner = BenchmarkRunner(agent)
 hud = HUDBenchmark(runner)
